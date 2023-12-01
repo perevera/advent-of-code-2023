@@ -1,4 +1,6 @@
+import sys
 from typing import Union
+
 
 dict_numbers = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7, 'eight': 8, 'nine': 9 }
 dict_numbers_reversed = {'eno': 1, 'owt': 2, 'eerht': 3, 'ruof': 4, 'evif': 5, 'xis': 6, 'neves': 7, 'thgie': 8, 'enin': 9}
@@ -79,13 +81,21 @@ def check_digit(line: str, i: int, reversed: bool = False) -> Union[int, None]:
     return ret
 
 
-def main():
+def main(input_file: str) -> int:
+    """
+    Main function
+    :param input_file
+    :return: the sum of all calibration values
+    """
+
+    # input_file = sys.argv[1]
+
     # input file path
     # file_path = '../sample/sample-day1-2.txt'
-    file_path = '../input/input-day1.txt'
+    # file_path = '../input/input-day1.txt'
 
     # read lines from the file
-    lines = read_lines_from_file(file_path)
+    lines = read_lines_from_file(input_file)
 
     # read calibration values and compute the total
     total = 0
@@ -96,6 +106,12 @@ def main():
 
     print(f"All the calibration values sum: {total}")
 
+    return total
+
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 2:
+        print("Usage: python day1.py <input_file>")
+        sys.exit(1)
+
+    main(sys.argv[1])
