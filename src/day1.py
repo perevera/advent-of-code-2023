@@ -1,84 +1,112 @@
 import sys
-from typing import Union
+from typing import Union, Tuple
 
 
 dict_numbers = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7, 'eight': 8, 'nine': 9 }
 dict_numbers_reversed = {'eno': 1, 'owt': 2, 'eerht': 3, 'ruof': 4, 'evif': 5, 'xis': 6, 'neves': 7, 'thgie': 8, 'enin': 9}
 
 
-def read_lines_from_file(file_path):
-    # Open the file in read mode
-    with open(file_path, 'r') as file:
-        # Read all lines into a list
-        lines = file.readlines()
+class LineParser:
+    def __init__(self, line: str):
+        self.line = line
+        self.first_digit = self.get_first_digit()
+        self.last_digit = self.get_last_digit()
+        print(f"first: {self.first_digit}, last: {self.last_digit}")
 
-    return lines
+    def get_first_digit(self) -> int:
+        """
+        Get first digit
+        :return: digit that first occurs
+        """
+        i1, val1 = self.search_first_digit()
+        i2, val2 = self.search_first_word()
 
+        if val1:
+            if val2:
+                if i1 < i2:
+                    return val1
+                else:
+                    return dict_numbers[val2]
+            else:
+                return val1
+        else:
+            return dict_numbers[val2]
 
-def get_calibration_value(line: str) -> int:
-    """
-    Get the calibration value for a line
-    :param line: input line
-    :return: calibration value
-    """
-    val = None
+    def get_last_digit(self) -> int:
+        """
+        Get last digit
+        :return: digit that first occurs
+        """
+        i1, val1 = self.search_first_digit(reverse=True)
+        i2, val2 = self.search_first_word(reverse=True)
 
-    line = line.strip()
+        if val1:
+            if val2:
+                if i1 < i2:
+                    return val1
+                else:
+                    return dict_numbers_reversed[val2]
+            else:
+                return val1
+        else:
+            return dict_numbers_reversed[val2]
 
-    for i, c in enumerate(line):
-        try:
-            v1 = int(c)
-            break
-        except ValueError:       # not a digit
-            v1 = check_digit(line, i)
-            if v1 is not None:
-                break
+    def search_first_digit(self, reverse: bool = False) -> Tuple[Union[int, None], Union[int, None]]:
+        """
+        Search the first occurrence of a digit
+        :param reverse:
+        :return:
+        """
+        line = self.line
 
-    for i, c in enumerate(line[::-1]):
-        try:
-            v2 = int(c)
-            break
-        except ValueError:       # not a digit
-            v2 = check_digit(line[::-1], i, reversed=True)
-            if v2 is not None:
-                break
+        if reverse:
+            line = self.line[::-1]
 
-    val = v1 * 10 + v2
-
-    return val
-
-
-def check_digit(line: str, i: int, reversed: bool = False) -> Union[int, None]:
-    """
-    Check if a digit with letters exist starting at the given index
-    :param line: line
-    :param i: index
-    :param reversed: flag to indicate if the input line is reversed to look up from the end
-    :return: digit
-    """
-    if reversed:
-        the_numbers = dict_numbers_reversed
-    else:
-        the_numbers = dict_numbers
-
-    try:
-        # digits with 3 letters
-        key = line[i:i + 3]
-        ret = the_numbers[key]
-    except KeyError:
-        try:
-            # digits with 4 letters
-            key = line[i:i + 4]
-            ret = the_numbers[key]
-        except KeyError:
+        for i, char in enumerate(line):
             try:
-                # digits with 5 letters
-                key = line[i:i + 5]
-                ret = the_numbers[key]
-            except KeyError:
-                ret = None
+                digit = int(line[i])
+                return i, digit
+            except ValueError:  # not a digit
+                continue
 
-    return ret
+        return None, None
+
+    def search_first_word(self, reverse: bool = False) -> Tuple[Union[int, None], Union[str, None]]:
+        """
+        Search the first occurrence of a word that corresponds to a digit
+        :param reverse
+        :return:
+        """
+        found = dict()
+
+        if reverse:
+            line = self.line[::-1]
+            numbers = dict_numbers_reversed
+        else:
+            line = self.line
+            numbers = dict_numbers
+
+        for k in numbers.keys():
+            # Using find() method
+            i = line.find(k)
+            # Check if the substring is found
+            if i != -1:
+                found[k] = i
+
+        if found.values():
+            i = min(found.values())
+            word = min(found, key=lambda k: found[k])
+            return i, word
+        else:
+            return None, None
+
+    @property
+    def calibration_value(self) -> int:
+        try:
+            val = self.first_digit * 10 + self.last_digit
+            return val
+        except TypeError:
+            return None
 
 
 def main(input_file: str) -> int:
@@ -87,22 +115,12 @@ def main(input_file: str) -> int:
     :param input_file
     :return: the sum of all calibration values
     """
-
-    # input_file = sys.argv[1]
-
-    # input file path
-    # file_path = '../sample/sample-day1-2.txt'
-    # file_path = '../input/input-day1.txt'
-
-    # read lines from the file
-    lines = read_lines_from_file(input_file)
-
-    # read calibration values and compute the total
     total = 0
 
-    for line in lines:
-        print(get_calibration_value(line))
-        total += get_calibration_value(line)
+    with open(input_file, 'r') as file:
+        for line in file:
+            line_parser = LineParser(line.strip())
+            total += line_parser.calibration_value
 
     print(f"All the calibration values sum: {total}")
 
