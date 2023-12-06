@@ -1,5 +1,6 @@
 import sys
 import time
+from typing import Union
 
 
 def get_num_wins(ttime: int, ddistance: int) -> int:
@@ -19,9 +20,87 @@ def get_num_wins(ttime: int, ddistance: int) -> int:
     return num_wins
 
 
+def get_lower(t1: int, t2: int, ttime: int, ddistance: int) -> Union[int, None]:
+    """
+    Determine the lower time needed to beat that distance, with recursion
+    :param t1:
+    :param t2:
+    :param distance:
+    :return:
+    """
+    print(f"Executing get_lower with t1 = {t1}, t2 = {t2}")
+    if ((ttime - t1) * t1) > ddistance:
+        return t1
+
+    if ((ttime - t2) * t2) <= ddistance:
+        return None     # it means no button holding time inside this range would beat the record
+
+    # split in two halves
+    span = t2 - t1
+    tt1 = t1
+    tt2 = span // 2 + tt1
+    tt3 = tt2 + 1
+    tt4 = t2
+
+    l1 = get_lower(tt1, tt2, ttime, ddistance)
+    l2 = get_lower(tt3, tt4, ttime, ddistance)
+
+    return l2 if l1 is None else l1
+
+
+def get_upper(t1: int, t2: int, ttime: int, ddistance: int) -> Union[int, None]:
+    """
+    Determine the upper time needed to beat that distance, with recursion
+    :param t1:
+    :param t2:
+    :param distance:
+    :return:
+    """
+    if ((ttime - t2) * t2) > ddistance:
+        return t2
+
+    if ((ttime - t1) * t1) <= ddistance:
+        return None     # it means no button holding time inside this range would beat the record
+
+    # split in two halves
+    span = t2 - t1
+    tt1 = t1
+    tt2 = span // 2 + tt1
+    tt3 = tt2 + 1
+    tt4 = t2
+
+    l1 = get_upper(tt1, tt2, ttime, ddistance)
+    l2 = get_upper(tt3, tt4, ttime, ddistance)
+
+    return l1 if l2 is None else l2
+
+
+def get_num_wins_recursive(ttime: int, ddistance: int) -> int:
+    """
+    Determine the number of ways you can beat the record in this race
+    :param ttime: race time
+    :param ddistance: record distance
+    :return:
+    """
+    # split in two halves
+    t1 = 1
+    t2 = ttime // 2
+    t3 = t2 + 1
+    t4 = ttime
+
+    # start the recursive method
+    lower_limit = get_lower(t1, t2, ttime, ddistance)
+    upper_limit = get_upper(t3, t4, ttime, ddistance)
+
+    # results
+    print(f"You could hold the button anywhere from {lower_limit} to {upper_limit} milliseconds and beat the record")
+    num_wins = upper_limit - lower_limit + 1
+    return num_wins
+
+
 def part_one(input_file: str):
     """
-    Main function
+    Main function for part one
     :param input_file
     :return: the sum of all part numbers
     """
@@ -58,7 +137,7 @@ def part_one(input_file: str):
 
 def part_two(input_file: str):
     """
-    Main function
+    Main function for part 2
     :param input_file
     :return: the sum of all part numbers
     """
@@ -89,6 +168,39 @@ def part_two(input_file: str):
     return num_wins
 
 
+def part_two_recursive(input_file: str):
+    """
+    Main function for part 2 (recursion)
+    :param input_file
+    :return: the sum of all part numbers
+    """
+    record = dict()
+
+    # process lines from input file
+    with open(input_file, 'r') as file:
+        lines = file.readlines()
+
+    # Check if the last line is empty
+    if lines and lines[-1].strip() == '':
+        lines.pop()
+
+    for line in lines:
+        fields = line.split(':')
+        value = ''
+        for n in fields[1].split():
+            value += n
+        record[fields[0]] = int(value)
+
+    # DEBUG
+    print(record)
+
+    num_wins = get_num_wins_recursive(record['Time'], record['Distance'])
+
+    print(f"The number of ways to win is: {num_wins}")
+
+    return num_wins
+
+
 def print_help_and_exit():
     """
 
@@ -113,6 +225,8 @@ if __name__ == "__main__":
         part_one(sys.argv[2])
     elif part_number == 2:
         part_two(sys.argv[2])
+    elif part_number == 3:
+        part_two_recursive(sys.argv[2])
     else:
         print_help_and_exit()
 
