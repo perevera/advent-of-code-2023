@@ -60,7 +60,7 @@ def get_upper(t1: int, t2: int, ttime: int, ddistance: int) -> Union[int, None]:
         return t2
 
     if ((ttime - t1) * t1) <= ddistance:
-        return None     # it means no button holding time inside this range would beat the record
+        return None     # it means no button holding time inside this range would beat the recordsample-day6.txt
 
     # split in two halves
     span = t2 - t1
