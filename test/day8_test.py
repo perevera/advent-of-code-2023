@@ -1,4 +1,3 @@
-import unittest
 from src.day8 import main as day8
 
 

@@ -16,8 +16,6 @@ from typing import Union, Tuple, List
 #     #     return f"Node -> name: {self.name}, next left:{self.next['L']}, next_right: {self.next['R']}"
 
 
-network = dict()
-
 
 def get_num_steps_first(network: dict, directions: str) -> int:
     """
@@ -155,10 +153,6 @@ def main(args) -> int:
     """
     # record the start time
     start_time = time.time()
-
-    # reset the network dictionary
-    global network
-    network = {}
 
     if len(args) != 2:
         print_help_and_exit()
