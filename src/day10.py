@@ -31,6 +31,10 @@ def traverse_loop(grid, start, backwards=False) -> int:
     length = 0
 
     next_tile = tuple()
+    # limits = [(0, 0) * len(grid)]
+    x = [start[1] for _ in range(len(grid))]
+    y = [start[1] for _ in range(len(grid[0]))]
+    limits = list(zip(x, y))
 
     # search the next tile from the start
     if grid[start[0] -1][start[1]] in move[0]:
@@ -49,6 +53,14 @@ def traverse_loop(grid, start, backwards=False) -> int:
     print(next_tile)
 
     while True:
+        try:
+            if limits[next_tile[0]][0] > next_tile[1]:
+                limits[next_tile[0]] = (next_tile[1], limits[next_tile[0]][1])
+            elif limits[next_tile[0]][1] < next_tile[1]:
+                limits[next_tile[0]] = (limits[next_tile[0]][0], next_tile[1])
+        except IndexError as e:
+            print(e)
+
         length += 1
         symbol = grid[next_tile[0]][next_tile[1]]
         print(symbol)
@@ -57,6 +69,8 @@ def traverse_loop(grid, start, backwards=False) -> int:
         next_tile = (next_tile[0] + move[d][symbol][0], next_tile[1] + move[d][symbol][1])
         d = change[d][symbol]
 
+    print(limits)
+    # Here limits should be okey, we need to iterate over all lines (x) and check which '.' are inside limits
 
     farthest = length // 2
 
