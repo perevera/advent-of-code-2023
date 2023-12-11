@@ -1,7 +1,5 @@
 import sys
 import time
-# from shapely.geometry import Point, Polygon
-import numpy as np
 from typing import Union, Tuple, List
 
 # 0 -> North
