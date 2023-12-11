@@ -175,34 +175,37 @@ def count_points(loop: List[Tuple[int, int]], grid: List[List[int]]) -> int:
     return count_inside_polygon
 
 
-def parse_input_file(input_file: str):
+def parse_input_file(input_file: str) -> List[List[chr]]:
     """
     Process all lines from the input file to extract data
     :param input_file: input file name with path
     :return:
     """
     grid = []
-    start = tuple()
+    galaxy_num = 1
 
     with open(input_file, 'r') as file:
-        for i, line in enumerate(file):
-            if 'S' in line:
-                start = (i, line.index('S'))
-            grid.append([s for s in line.strip()])
+        for line in file:
+            row = [c for c in line]
+            for i, c in enumerate(row):
+                if c == '#':
+                    row[i] = chr(galaxy_num)
+                    galaxy_num += galaxy_num
+            grid.append(row)
 
-    return grid, start
+    return grid
 
 
 def print_help_and_exit():
     """
     Print help and exit
     """
-    print("Usage: python day10.py <input_file>")
+    print("Usage: python day11.py <input_file>")
     print("\twhere <input_file> is the input data file with path")
     sys.exit(1)
 
 
-def main(args) -> Tuple[int, int]:
+def main(args) -> int:
     """
     Main function
     :return: the total winnings
@@ -213,17 +216,17 @@ def main(args) -> Tuple[int, int]:
     if len(args) != 1:
         print_help_and_exit()
 
-    grid, start = parse_input_file(args[0])
+    grid = parse_input_file(args[0])
 
     # DEBUG
     print(grid)
 
-    farthest, polygon, loop = traverse_loop(grid, start)
-    count_points_inside = count_points(loop, grid)
-
-    # DEBUG
-    print(f"The farthest point of the loop is at {farthest} steps")
-    print(f"The number of tiles enclosed by the loop is: {count_points_inside}")
+    # farthest, polygon, loop = traverse_loop(grid, start)
+    # count_points_inside = count_points(loop, grid)
+    #
+    # # DEBUG
+    # print(f"The farthest point of the loop is at {farthest} steps")
+    # print(f"The number of tiles enclosed by the loop is: {count_points_inside}")
 
     # record the end time
     end_time = time.time()
@@ -234,7 +237,9 @@ def main(args) -> Tuple[int, int]:
     # print the duration
     print(f"Script execution took {duration:.2f} seconds")
 
-    return farthest, count_points_inside
+    return -1
+
+    # return farthest, count_points_inside
 
 
 if __name__ == "__main__":
