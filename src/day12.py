@@ -14,12 +14,18 @@ def get_sum_arrangements(info: list, patterns: list) -> int:
     sum_arrangements = 0
 
     for i, row in enumerate(info):
-        this_arrangements = 0
         unknowns = [i for i, c in enumerate(row) if c == '?']
         num_combinations = 2 ** len(unknowns)
+        total_ones = sum([1 for c in patterns[i] if c == '1'])
+        current_ones = sum([1 for c in row if c == '1'])
+        missing_ones = total_ones - current_ones
+        this_arrangements = 0
         for j in range(num_combinations):
             # bnum = bin(j)
             binary_string = bin(j)[2:].zfill(len(unknowns))
+            num_ones = sum([1 for c in binary_string if c == '1'])
+            if num_ones != missing_ones:
+                continue
             # Convert the string to a list of characters
             char_list = list(row)
             for k, l in enumerate(unknowns):
@@ -31,7 +37,7 @@ def get_sum_arrangements(info: list, patterns: list) -> int:
             if match:
                 this_arrangements += 1
 
-        print(f"{this_arrangements} possible arrangements for row {row}")
+        print(f"#{i} -> {this_arrangements} possible arrangements for row {row}")
         sum_arrangements += this_arrangements
 
     return sum_arrangements
