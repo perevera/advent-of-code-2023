@@ -6,7 +6,7 @@ def test_first_part():
     Assert the sample input gives the right value (part one)
     :return:
     """
-    args = ['1', 'sample/sample-day12.txt']
+    args = ['sample/sample-day12.txt']
     tot = day12(args)
     assert tot == 21
 

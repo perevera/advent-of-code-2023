@@ -1,78 +1,64 @@
-import re
 import sys
 import time
-from typing import Union, Tuple, List
 
 
-def get_sum_arrangements(info: list, patterns: list) -> int:
+# 1. part - What is the sum of possible arrangements?
+def recursive_arrangement(p, g, springs, groups):
     """
-    Test all arrangements and get the valid number of combinations
-    :param info:
-    :param patterns:
-    :return: the total sum of possible arrangements
+    Recursive function to count all different arrangements of groups of damaged springs that match the requirement
+    :param spring_i: position where to start the search in the array of springs
+    :param group_i: index of the group we are trying to arrange
+    :param springs: array of springs
+    :param groups: list of sizes of groups of damaged spring
+    :return:
     """
-    sum_arrangements = 0
+    if g >= len(groups):  # no more groups
+        if p < len(springs) and '#' in springs[p:]:
+            # eg: .##?????#.. 4,1
+            return 0  # not a solution - there are still damaged springs in the record
+        return 1
 
-    for i, row in enumerate(info):
-        unknowns = [i for i, c in enumerate(row) if c == '?']
-        num_combinations = 2 ** len(unknowns)
-        total_ones = sum([1 for c in patterns[i] if c == '1'])
-        current_ones = sum([1 for c in row if c == '1'])
-        missing_ones = total_ones - current_ones
-        this_arrangements = 0
-        for j in range(num_combinations):
-            # bnum = bin(j)
-            binary_string = bin(j)[2:].zfill(len(unknowns))
-            num_ones = sum([1 for c in binary_string if c == '1'])
-            if num_ones != missing_ones:
-                continue
-            # Convert the string to a list of characters
-            char_list = list(row)
-            for k, l in enumerate(unknowns):
-                char_list[l] = binary_string[k]
-            # Join the characters back into a string
-            new_row = ''.join(char_list)
-            match = re.search(patterns[i], new_row)
+    if p >= len(springs):
+        return 0  # we ran out of springs but there are still groups to arrange
 
-            if match:
-                this_arrangements += 1
+    res = None
+    gs = groups[g]  # damaged group size
 
-        print(f"#{i} -> {this_arrangements} possible arrangements for row {row}")
-        sum_arrangements += this_arrangements
+    if springs[p] == '?':
+        # if we can start group of damaged springs here
+        # eg: '??#...... 3' we can place 3 '#' and there is '?' or '.' after the group
+        # eg: '??##...... 3' we cannot place 3 '#' here
+        if '.' not in springs[p:p + gs] and springs[p + gs] != '#':
+            # start damaged group here + this spring is operational ('.')
+            res = recursive_arrangement(p + gs + 1, g + 1, springs, groups) + recursive_arrangement(p + 1, g, springs, groups)
+        else:
+            # this spring is operational ('.')
+            res = recursive_arrangement(p + 1, g, springs, groups)
+    elif springs[p] == '#':
+        # if we can start damaged group here
+        if '.' not in springs[p:p + gs] and springs[p + gs] != '#':
+            res = recursive_arrangement(p + gs + 1, g + 1, springs, groups)
+        else:
+            res = 0  # not a solution - we must always start damaged group here
+    elif springs[p] == '.':
+        res = recursive_arrangement(p + 1, g, springs, groups)  # operational spring -> go to the next spring
 
-    return sum_arrangements
-
-
-def parse_input_file(input_file: str) -> Tuple[List[str], List[str]]:
-    """
-    Process all lines from the input file to extract data
-    :param input_file: input file name with path
-    :return: records
-    """
-    info = []
-    # groups = []
-    patterns = []
-
-    with open(input_file, 'r') as file:
-        for line in file:
-            parts = line.split()
-            part_one = parts[0].replace('#', '1').replace('.', '0')
-            info.append(part_one)
-            part_two = parts[1]
-            groups = [int(n) * '1' for n in part_two.split(',')]
-            regex = '^0*' + '0+'.join(g for g in groups) + '0*$'
-            patterns.append(regex)
-
-    return info, patterns
+    return res
 
 
-def print_help_and_exit():
-    """
-    Print help and exit
-    """
-    print("Usage: python day12.py <expansion_factor> <input_file>")
-    print("\twhere <expansion_factor> is one of: 2, 10, 100 or 1000000 and <input_file> is the input data file with path")
-    sys.exit(1)
+def parse_input_file(input_file: str):
+    with open(input_file) as f:
+        sum_of_arrangements = 0
+
+        for line in f.readlines():
+            springs, groups = line.split()
+
+            groups = list(map(int, groups.split(',')))
+            springs = springs + '.'  # make sure there is operational spring after each damaged group
+
+            sum_of_arrangements += recursive_arrangement(0, 0, springs, groups)
+
+    return sum_of_arrangements
 
 
 def main(args) -> int:
@@ -80,25 +66,16 @@ def main(args) -> int:
     Main function
     :return: the total winnings
     """
-
-    # I will run a combination of regex and binary masks
-    # The entries will be converted as follows, e.g.:
-    # .#?#????##?# 1,1,1,4 -> 01?1????11?1 (# -> 1, . -> 0, ? -> 0)
-    # Then from the numbers we will compose a regex, in this case: \.+\#\.+\#\.+\#\#\#\#
-    # We will then generate all combinations for th ? characters (# or .) and check if they match the regex
-
     # record the start time
     start_time = time.time()
 
-    if len(args) != 2:
-        print_help_and_exit()
+    if len(args) != 1:
+        sys.exit(1)
+        # print_help_and_exit()
 
-    # get the initial grid from the input file
-    info, patterns = parse_input_file(args[1])
+    tot = parse_input_file(args[0])
 
-    # compose regex
-    tot = get_sum_arrangements(info, patterns)
-    print(f"Total number of possible arrangements is: {tot}")
+    print(f"Total number of arrangements: {tot}")
 
     # record the end time
     end_time = time.time()
@@ -110,6 +87,7 @@ def main(args) -> int:
     print(f"Script execution took {duration:.2f} seconds")
 
     return tot
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
