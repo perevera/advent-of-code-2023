@@ -46,13 +46,14 @@ from typing import Union, Tuple, List
 #     return res
 
 
-def recurse_find(row: list, i_1, i_2):
+def recurse_find_one(row: list, i_1, i_2):
     """
-
-    :param rows:
+    Recursive function to assert all rows/columns are mirrored (but one last at the end, maybe)
+    :param row:
+    :param i_1:
+    :param i_2:
     :return:
     """
-    # try:
     if i_1 < 0 or i_2 >= len(row):
         return True
     else:
@@ -60,12 +61,35 @@ def recurse_find(row: list, i_1, i_2):
             if i_1 == 0 or i_2 == len(row) - 1:
                 return True
             else:
-                return recurse_find(row, i_1 - 1, i_2 + 1)
+                return recurse_find_one(row, i_1 - 1, i_2 + 1)
         else:
             return False
 
 
-def find_reflection(grid: List[List[str]], i: int) -> int:
+def recurse_find_two(row: list, i_1, i_2):
+    """
+    Recursive function to assert all rows/columns are mirrored (but one last at the end, maybe)
+    :param row:
+    :param i_1:
+    :param i_2:
+    :return:
+    """
+    if i_1 < 0 or i_2 >= len(row):
+        return True
+    else:
+        # if row[i_1] == row[i_2]:
+        diffs = [(i, one, another) for i, (one, another) in enumerate(zip(row[i_1], row[i_2]))
+                 if one != another]
+        if len(diffs) <= 1:
+            if i_1 == 0 or i_2 == len(row) - 1:
+                return True
+            else:
+                return recurse_find_two(row, i_1 - 1, i_2 + 1)
+        else:
+            return False
+
+
+def find_reflection_one(grid: List[List[str]], i: int) -> int:
     """
     Process all grids to get the final result
     :param grid:
@@ -74,36 +98,82 @@ def find_reflection(grid: List[List[str]], i: int) -> int:
     """
     print(f"Looking for reflections on grid #{i}...")
 
-    tot = 0
+    zipped_data = list(zip(*grid))
 
     # look for vertical reflection
     for j in range(len(grid) - 1):
         if grid[j] == grid[j + 1]:
             print(f"rows {j} and {j+1} are alike...")
-            if recurse_find(grid, j - 1, j + 2):
+            if recurse_find_one(grid, j - 1, j + 2):
                 print("and there is perfect reflection")
-                # return (j + 1) * 100
-                tot += (j + 1) * 100
-                break
+                return (j + 1) * 100
             else:
                 print("but there is no perfect reflection")
 
     # look for horizontal reflection
-    zipped_data = list(zip(*grid))
-
     for j in range(len(zipped_data) - 1):
         if zipped_data[j] == zipped_data[j + 1]:
             print(f"columns {j} and {j+1} are alike...")
-            if recurse_find(zipped_data, j - 1, j + 2):
+            if recurse_find_one(zipped_data, j - 1, j + 2):
                 print("and there is perfect reflection")
-                # return j + 1
-                tot += j + 1
-                break
+                return j + 1
             else:
                 print("but there is no perfect reflection")
 
-    # print("no reflections found")
-    return tot
+
+def find_reflection_two(grid: List[List[str]], i: int) -> int:
+    """
+    Process all grids to get the final result
+    :param grid:
+    :param i:
+    :return:
+    """
+    print(f"Looking for reflections on grid #{i}...")
+
+    zipped_data = list(zip(*grid))
+
+    # first pass looking for vertical reflection
+    for j in range(len(grid) - 1):
+        diffs = [(i, one, another) for i, (one, another) in enumerate(zip(grid[j], grid[j + 1])) if one != another]
+        if len(diffs) <= 1:
+            print(f"rows {j} and {j-1} differ by one...")
+            if recurse_find_one(grid, j - 1, j + 2):
+                print("and there is perfect reflection")
+                return (j + 1) * 100
+            else:
+                print("but there is no perfect reflection")
+
+    # second pass looking for vertical reflection
+    for j in range(len(grid) - 1):
+        if grid[j] == grid[j + 1]:
+            print(f"rows {j} and {j-1} are alike...")
+            if recurse_find_two(grid,  j - 1, j + 2):
+                print("and there is perfect reflection")
+                return (j + 1) * 100
+            else:
+                print("but there is no perfect reflection")
+
+    # second pass looking for horizontal reflection
+    for j in range(len(zipped_data) - 1):
+        diffs = [(i, one, another) for i, (one, another) in enumerate(zip(zipped_data[j], zipped_data[j + 1]))
+                 if one != another]
+        if len(diffs) <= 1:
+            print(f"columns {j} and {j-1} differ by one...")
+            if recurse_find_one(zipped_data, j - 1, j + 2):
+                print("and there is perfect reflection")
+                return j + 1
+            else:
+                print("but there is no perfect reflection")
+
+    # first pass looking for horizontal reflection
+    for j in range(len(zipped_data) - 1):
+        if zipped_data[j] == zipped_data[j + 1]:
+            print(f"columns {j} and {j-1} are alike...")
+            if recurse_find_two(zipped_data, j - 1, j + 2):
+                print("and there is perfect reflection")
+                return j + 1
+            else:
+                print("but there is no perfect reflection")
 
 
 def parse_input_file(input_file: str) -> List[List[List[str]]]:
@@ -129,7 +199,7 @@ def parse_input_file(input_file: str) -> List[List[List[str]]]:
     return grids
 
 
-def main(args) -> int:
+def main(args) -> Tuple[int, int]:
     """
     Main function
     :return: the total winnings
@@ -143,10 +213,12 @@ def main(args) -> int:
 
     grids = parse_input_file(args[0])
 
-    tot = 0
+    tot_1 = 0
+    tot_2 = 0
     for i, grid in enumerate(grids):
-        tot += find_reflection(grid, i)
-    print(f"Total points: {tot}")
+        tot_1 += find_reflection_one(grid, i)
+        tot_2 += find_reflection_two(grid, i)
+    print(f"Total points: {tot_1} and {tot_2}")
 
     # record the end time
     end_time = time.time()
@@ -157,7 +229,7 @@ def main(args) -> int:
     # print the duration
     print(f"Script execution took {duration:.2f} seconds")
 
-    return tot
+    return tot_1, tot_2
 
 
 if __name__ == "__main__":
