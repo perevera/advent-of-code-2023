@@ -33,9 +33,19 @@ def test_first_part_three():
 
 def test_second_part_one():
     """
-    Assert the sample input gives the right value (part two)
+    Assert the sample input gives the right value (part two, sample file one)
     :return:
     """
     args = ['sample/sample-day13.txt']
     _, tot = day13(args)
     assert tot == 400
+
+
+def test_second_part_four():
+    """
+    Assert the sample input gives the right value (part two, sample file four)
+    :return:
+    """
+    args = ['sample/sample-day13-4.txt']
+    _, tot = day13(args)
+    assert tot == 2100

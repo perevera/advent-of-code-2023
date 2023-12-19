@@ -96,29 +96,29 @@ def find_reflection_one(grid: List[List[str]], i: int) -> int:
     :param i:
     :return:
     """
-    print(f"Looking for reflections on grid #{i}...")
+    # print(f"Looking for reflections on grid #{i}...")
 
     zipped_data = list(zip(*grid))
 
     # look for vertical reflection
     for j in range(len(grid) - 1):
         if grid[j] == grid[j + 1]:
-            print(f"rows {j} and {j+1} are alike...")
+            # print(f"rows {j} and {j+1} are alike...")
             if recurse_find_one(grid, j - 1, j + 2):
-                print("and there is perfect reflection")
+                # print("and there is perfect reflection")
                 return (j + 1) * 100
-            else:
-                print("but there is no perfect reflection")
+            # else:
+            #     print("but there is no perfect reflection")
 
     # look for horizontal reflection
     for j in range(len(zipped_data) - 1):
         if zipped_data[j] == zipped_data[j + 1]:
-            print(f"columns {j} and {j+1} are alike...")
+            # print(f"columns {j} and {j+1} are alike...")
             if recurse_find_one(zipped_data, j - 1, j + 2):
-                print("and there is perfect reflection")
+                # print("and there is perfect reflection")
                 return j + 1
-            else:
-                print("but there is no perfect reflection")
+            # else:
+            #     print("but there is no perfect reflection")
 
 
 def find_reflection_two(grid: List[List[str]], i: int) -> int:
@@ -128,52 +128,51 @@ def find_reflection_two(grid: List[List[str]], i: int) -> int:
     :param i:
     :return:
     """
-    print(f"Looking for reflections on grid #{i}...")
+    # print(f"Looking for reflections on grid #{i}...")
 
     zipped_data = list(zip(*grid))
 
-    # first pass looking for vertical reflection
-    for j in range(len(grid) - 1):
-        diffs = [(i, one, another) for i, (one, another) in enumerate(zip(grid[j], grid[j + 1])) if one != another]
-        if len(diffs) <= 1:
-            print(f"rows {j} and {j-1} differ by one...")
-            if recurse_find_one(grid, j - 1, j + 2):
-                print("and there is perfect reflection")
-                return (j + 1) * 100
-            else:
-                print("but there is no perfect reflection")
+    # # first pass looking for vertical reflection
+    # for j in range(len(grid) - 1):
+    #     if grid[j] == grid[j + 1]:
+    #         if recurse_find_two(grid,  j - 1, j + 2):
+    #             return (j + 1) * 100
 
     # second pass looking for vertical reflection
-    for j in range(len(grid) - 1):
-        if grid[j] == grid[j + 1]:
-            print(f"rows {j} and {j-1} are alike...")
-            if recurse_find_two(grid,  j - 1, j + 2):
-                print("and there is perfect reflection")
+    # for j in range(len(grid) - 1):
+    for j in range(len(grid) - 1, -1, -1):
+        diffs = [(i, one, another) for i, (one, another) in enumerate(zip(grid[j-1], grid[j])) if one != another]
+        if len(diffs) == 0:
+            if recurse_find_two(grid, j - 2, j + 1):
                 return (j + 1) * 100
-            else:
-                print("but there is no perfect reflection")
+        elif len(diffs) == 1:
+            if recurse_find_one(grid, j - 2, j + 1):
+                return (j + 1) * 100
+
+        # if len(diffs) <= 1:
+        #     if recurse_find_two(grid, j - 1, j + 2):
+        #         return (j + 1) * 100
+
+    # # first pass looking for horizontal reflection
+    # for j in range(len(zipped_data) - 1):
+    #     if zipped_data[j] == zipped_data[j + 1]:
+    #         if recurse_find_two(zipped_data, j - 1, j + 2):
+    #             return j + 1
 
     # second pass looking for horizontal reflection
-    for j in range(len(zipped_data) - 1):
-        diffs = [(i, one, another) for i, (one, another) in enumerate(zip(zipped_data[j], zipped_data[j + 1]))
+    # for j in range(len(zipped_data) - 1):
+    for j in range(len(zipped_data) - 1, -1, -1):
+        diffs = [(i, one, another) for i, (one, another) in enumerate(zip(zipped_data[j-1], zipped_data[j]))
                  if one != another]
-        if len(diffs) <= 1:
-            print(f"columns {j} and {j-1} differ by one...")
-            if recurse_find_one(zipped_data, j - 1, j + 2):
-                print("and there is perfect reflection")
+        if len(diffs) == 0:
+            if recurse_find_two(zipped_data, j - 2, j + 1):
                 return j + 1
-            else:
-                print("but there is no perfect reflection")
-
-    # first pass looking for horizontal reflection
-    for j in range(len(zipped_data) - 1):
-        if zipped_data[j] == zipped_data[j + 1]:
-            print(f"columns {j} and {j-1} are alike...")
-            if recurse_find_two(zipped_data, j - 1, j + 2):
-                print("and there is perfect reflection")
+        elif len(diffs) == 1:
+            if recurse_find_one(zipped_data, j - 2, j + 1):
                 return j + 1
-            else:
-                print("but there is no perfect reflection")
+        # if len(diffs) <= 1:
+        #     if recurse_find_two(zipped_data, j - 1, j + 2):
+        #         return j + 1
 
 
 def parse_input_file(input_file: str) -> List[List[List[str]]]:
@@ -217,7 +216,10 @@ def main(args) -> Tuple[int, int]:
     tot_2 = 0
     for i, grid in enumerate(grids):
         tot_1 += find_reflection_one(grid, i)
-        tot_2 += find_reflection_two(grid, i)
+        # DEBUG
+        r_2 = find_reflection_two(grid, i)
+        print(f"grid #{i}, value = {r_2}")
+        tot_2 += r_2
     print(f"Total points: {tot_1} and {tot_2}")
 
     # record the end time
