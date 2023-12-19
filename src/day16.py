@@ -1,3 +1,4 @@
+import copy
 import sys
 import time
 from typing import Union, Tuple, List
@@ -133,7 +134,7 @@ def find_reflection_two(grid: List[List[str]], i: int) -> int:
         #         return j + 1
 
 
-def count_recursive(grid: dict(), coord_1: Tuple[int, int], vector: Tuple[int, int]) -> int:
+def count_recursive(grid: dict, coord_1: Tuple[int, int], vector: Tuple[int, int]) -> int:
     """
     Follow a beam within the grid and count all newly energized tiles
     :param grid: the grid
@@ -193,8 +194,6 @@ def count_recursive(grid: dict(), coord_1: Tuple[int, int], vector: Tuple[int, i
                 print("split in two beams...")
                 # mark the tile for avoiding infinite splits
                 grid[coord_n] = ('X', grid[coord_n][1])
-                # n_1 = count_recursive(grid, coord_n, (0, -1))
-                # n_2 = count_recursive(grid, coord_n, (0, 1))
                 num += (count_recursive(grid, (coord_n[0], coord_n[1] - 1), (0, -1)) +
                         count_recursive(grid, (coord_n[0], coord_n[1] + 1), (0, 1)))
                 return num
@@ -202,8 +201,6 @@ def count_recursive(grid: dict(), coord_1: Tuple[int, int], vector: Tuple[int, i
                 print("split in two beams...")
                 # mark the tile for avoiding infinite splits
                 grid[coord_n] = ('X', grid[coord_n][1])
-                # n_1 = count_recursive(grid, coord_n, (1, 0))
-                # n_2 = count_recursive(grid, coord_n,  (-1, 0))
                 num += (count_recursive(grid, (coord_n[0] + 1, coord_n[1]), (1, 0)) +
                         count_recursive(grid, (coord_n[0] - 1, coord_n[1]),  (-1, 0)))
                 return num
@@ -214,7 +211,28 @@ def count_recursive(grid: dict(), coord_1: Tuple[int, int], vector: Tuple[int, i
         coord_n = tuple(x + y for x, y in zip(coord_n, vector))     # move to the next tile
 
 
-def parse_input_file(input_file: str) -> dict:
+def reset_grid(grid: dict):
+    """
+    De-energize all tiles of the grid to allow a new count
+    :param grid: the grid
+    :return:
+    """
+    for k in grid:
+        grid[k] = (grid[k][0], False)
+
+    # # Get the number of rows and columns in the grid
+    # num_rows = len(grid)
+    # num_columns = len(grid[0]) if grid else 0
+    #
+    # # Iterate over each row
+    # for row in range(num_rows):
+    #     # Iterate over each column in the current row
+    #     for col in range(num_columns):
+    #         # Access the value of the current tile
+    #         grid[row][col][1] = False
+
+
+def parse_input_file(input_file: str) -> Tuple[dict, int, int]:
     """
     Parse the input file to extract data
     :param input_file:
@@ -233,16 +251,14 @@ def parse_input_file(input_file: str) -> dict:
         for y, char in enumerate(chars):
             grid[(x, y)] = (char, False)
 
-    # Map lines to a list of characters
-    # for x, line in enumerate(lines):
-    #     for y in list(map(chr, line)):
-    #         grid.append((x, y, False))
+    len_x = len(lines)
+    len_y = len(characters_list[0])
 
     # print(grids)
-    return grid
+    return grid, len_x, len_y
 
 
-def main(args) -> int:
+def main(args) -> Tuple[int, int]:
     """
     Main function
     :return: the number of tiles that end up being energized
@@ -254,42 +270,46 @@ def main(args) -> int:
         sys.exit(1)
         # print_help_and_exit()
 
-    grid = parse_input_file(args[0])
+    grid, len_x, len_y = parse_input_file(args[0])
 
     # part one ********************************************************
 
-    # determine the initial vector of movement
-    # vector = (1, 0) if grid[(0, 0)][0] == '\\' else (0, 1)
-    vector = (0, 1)
+    # create a deep copy of the original grid
+    grid_1 = copy.deepcopy(grid)
     # call the recursive function, sum up one for the initial tile
-    num = count_recursive(grid, (0, 0), vector)
-    print(f"The number of tiles that end up being energized is {num}")
+    num_1 = count_recursive(grid_1, (0, 0), (0, 1))
+    print(f"The number of tiles that end up being energized is {num_1}")
 
     # part two ********************************************************
 
-    # starting on the left side
-    # for x in range(len(grid)):
+    nums = list()
 
+    # starting on the left side
+    for x in range(len_x):
+        grid_2 = copy.deepcopy(grid)
+        num_2 = count_recursive(grid_2, (x, 0), (0, 1))
+        nums.append(num_2)
 
     # starting on the top side
+    for y in range(len_y):
+        grid_3 = copy.deepcopy(grid)
+        num_3 = count_recursive(grid_3, (0, y), (1, 0))
+        nums.append(num_3)
 
     # starting on the right side
+    for x in range(len_x):
+        grid_4 = copy.deepcopy(grid)
+        num_4 = count_recursive(grid_4, (x, len_y - 1), (0, -1))
+        nums.append(num_4)
 
     # starting on the bottom side
+    for y in range(len_y):
+        grid_5 = copy.deepcopy(grid)
+        num_5 = count_recursive(grid_5, (len_x - 1, y), (-1, 0))
+        nums.append(num_5)
 
-
-    # tuple_range = list(zip(range(start, end), range(start + 1, end + 1)))
-
-
-    # tot_1 = 0
-    # tot_2 = 0
-    # for i, grid in enumerate(grids):
-    #     tot_1 += find_reflection_one(grid, i)
-    #     # DEBUG
-    #     r_2 = find_reflection_two(grid, i)
-    #     print(f"grid #{i}, value = {r_2}")
-    #     tot_2 += r_2
-    # print(f"Total points: {tot_1} and {tot_2}")
+    max_l = max(nums)
+    print(f"The max number of tiles that end up being energized is {max_l}")
 
     # record the end time
     end_time = time.time()
@@ -300,7 +320,7 @@ def main(args) -> int:
     # print the duration
     print(f"Script execution took {duration:.2f} seconds")
 
-    return num
+    return num_1, max_l
 
 
 if __name__ == "__main__":

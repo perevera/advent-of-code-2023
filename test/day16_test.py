@@ -7,5 +7,15 @@ def test_first_part_one():
     :return:
     """
     args = ['sample/sample-day16.txt']
-    num = day16(args)
+    num, _ = day16(args)
     assert num == 46
+
+
+def test_first_part_two():
+    """
+    Assert the sample input gives the right value (part two)
+    :return:
+    """
+    args = ['sample/sample-day16.txt']
+    _, num = day16(args)
+    assert num == 51
