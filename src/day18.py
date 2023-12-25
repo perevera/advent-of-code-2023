@@ -35,9 +35,9 @@ def parse_input_file_get_perimeter(input_file: str) -> int:
     return num
 
 
-def parse_input_file_get_vertices(input_file: str) -> List[Tuple[int, int]]:
+def parse_input_file_get_vertices_one(input_file: str) -> List[Tuple[int, int]]:
     """
-    Parse the input file to obtain the vertices of the polygon
+    Parse the input file to obtain the vertices of the polygon according to the first encoding format
     :param input_file:
     :return:
     """
@@ -51,7 +51,6 @@ def parse_input_file_get_vertices(input_file: str) -> List[Tuple[int, int]]:
         parts = line.split()
         direction = parts[0]
         steps = parts[1]
-        color = parts[2]
 
         # move as indicated
         if direction == 'R':
@@ -61,6 +60,42 @@ def parse_input_file_get_vertices(input_file: str) -> List[Tuple[int, int]]:
         elif direction == 'L':
             y -= (int(steps))
         elif direction == 'U':
+            x -= (int(steps))
+
+        # store the vertice
+        vertices.append((x, y))
+
+    return vertices
+
+
+def parse_input_file_get_vertices_two(input_file: str) -> List[Tuple[int, int]]:
+    """
+    Parse the input file to obtain the vertices of the polygon according to the second encoding format
+    :param input_file:
+    :return:
+    """
+    vertices = []
+    x = y = 0
+
+    with open(input_file, 'r') as file:
+        lines = file.readlines()
+
+    for line in lines:
+        parts = line.split()
+        color = parts[2]
+        steps_h = color[2:7]
+        direction = color[7]
+
+        steps = int(steps_h, 16)
+
+        # move as indicated
+        if direction == '0':    # R
+            y += int(steps)
+        elif direction == '1':  # D
+            x += int(steps)
+        elif direction == '2':  # L
+            y -= (int(steps))
+        elif direction == '3':  # U
             x -= (int(steps))
 
         # store the vertice
@@ -149,9 +184,15 @@ def main(args) -> Tuple[int, int]:
 
     # part one ********************************************************
 
-    vertices = parse_input_file_get_vertices(args[0])
-    sum = get_result(vertices)
-    print(f"The value we are looking for is: {sum}")
+    vertices_1 = parse_input_file_get_vertices_one(args[0])
+    sum_1 = get_result(vertices_1)
+    print(f"Result for part 1 is: {sum_1}")
+
+    # part two ********************************************************
+
+    vertices_2 = parse_input_file_get_vertices_two(args[0])
+    sum_2 = get_result(vertices_2)
+    print(f"Result for part 2 is: {sum_2}")
 
     # record the end time
     end_time = time.time()
@@ -162,7 +203,7 @@ def main(args) -> Tuple[int, int]:
     # print the duration
     print(f"Script execution took {duration:.2f} seconds")
 
-    return sum, -1
+    return sum_1, sum_2
 
 
 if __name__ == "__main__":
